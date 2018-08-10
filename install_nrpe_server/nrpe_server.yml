@@ -1,0 +1,6 @@
+---
+- name: Install nagios-nrpe-server
+  hosts: proxmox_debian
+  
+  roles:
+    - nrpe_server

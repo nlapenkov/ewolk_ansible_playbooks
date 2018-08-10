@@ -1,0 +1,43 @@
+- name: Install need soft
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - nagios-nrpe-server
+    - nagios-plugins
+    - autoconf 
+    - gcc 
+    - libc6 
+    - make 
+    - wget 
+    - unzip 
+    - libgd-dev
+
+- name: Install Sys::Statistics::Linux
+  command: /usr/bin/perl -MCPAN -e 'install Sys::Statistics::Linux'
+
+- name: Copy plugin check_linux_stats.pl
+  template: src=check_linux_stats.pl  dest=/usr/lib/nagios/plugins/check_linux_stats.pl
+  notify:
+
+- name: Set permission
+  file: 
+    path: /usr/lib/nagios/plugins/check_linux_stats.pl
+    mode: 0777
+
+- name: Copy plugin check_mem
+  template: src=check_mem  dest=/usr/lib/nagios/plugins/check_mem
+  notify:
+
+- name: Set permission
+  file:
+    path: /usr/lib/nagios/plugins/check_mem
+    mode: 0777
+
+- name: Copy config nrpe.cfg
+  template: src=nrpe.cfg  dest=/etc/nagios/nrpe.cfg
+  notify:
+    - reload nagios-nrpe-server
+
+- name: Starting nagios-nrpe-server
+  service: name={{ item }} state=started
+  with_items:
+    - nagios-nrpe-server

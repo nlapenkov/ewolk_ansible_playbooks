@@ -1,0 +1,6 @@
+---
+- name: Apply iptables rules
+  hosts: proxmox_debian
+
+  roles:
+    - iptables_rules
