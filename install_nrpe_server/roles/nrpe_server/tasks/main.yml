@@ -12,7 +12,7 @@
     - libgd-dev
 
 - name: Install Sys::Statistics::Linux
-  command: /usr/bin/perl -MCPAN -e 'install Sys::Statistics::Linux'
+  shell: /usr/bin/perl -MCPAN -e 'install Sys::Statistics::Linux'
 
 - name: Copy plugin check_linux_stats.pl
   template: src=check_linux_stats.pl  dest=/usr/lib/nagios/plugins/check_linux_stats.pl
@@ -41,3 +41,6 @@
   service: name={{ item }} state=started
   with_items:
     - nagios-nrpe-server
+
+- name: Add to autorun nagios-nrpe-server
+  shell: systemctl enable nagios-nrpe-server
