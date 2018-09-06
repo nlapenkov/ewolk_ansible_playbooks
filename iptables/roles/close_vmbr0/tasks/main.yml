@@ -1,0 +1,4 @@
+- name: Close vmbr0  LIVE
+  command: /sbin/iptables -A INPUT -i vmbr0 -j DROP
+
+

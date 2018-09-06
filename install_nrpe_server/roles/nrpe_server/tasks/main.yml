@@ -25,7 +25,6 @@
 
 - name: Copy plugin check_mem
   template: src=check_mem  dest=/usr/lib/nagios/plugins/check_mem
-  notify:
 
 - name: Set permission
   file:

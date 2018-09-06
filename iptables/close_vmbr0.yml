@@ -1,0 +1,6 @@
+---
+- name: Close vmbr0 on iptables
+  hosts: proxmox_debian
+  
+  roles:
+    - close_vmbr0

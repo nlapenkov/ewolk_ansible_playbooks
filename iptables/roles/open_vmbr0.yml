@@ -1,0 +1,6 @@
+---
+- name: Open vmbr0 on iptables
+  hosts: proxmox_debian
+  
+  roles:
+    - open_vmbr0
