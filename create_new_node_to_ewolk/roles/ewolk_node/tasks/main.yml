@@ -1,0 +1,259 @@
+###### SET TIMEZONE ######
+- name: set timezone to Europe/Kiev
+  timezone:
+    name: Europe/Kiev
+
+###### CHANGE PVE-ENTERPRISE REPO ######
+- name: change /etc/apt/sources.list.d/pve-enterprise.list
+  template:
+    src: pve-enterprise.list
+    dest: /etc/apt/sources.list.d/pve-enterprise.list
+
+###### INSTALL SOFT ######
+- name: Install & configure need soft & users
+  apt: 
+    pkg: '{{ item }}' 
+    state: latest
+  with_items:
+    - 'sudo'
+    - 'mailutils'
+    - 'libsasl2-modules'
+    - 'mc'
+    - 'htop'
+    - 'net-tools'
+    - 'logtail'
+    - 'curl'
+    - 'wget'
+    - 'apache2'
+    - 'isc-dhcp-server'
+
+###### CREATE GROUP #######
+- name: Ensure group "admins" exists
+  group:
+    name: admins
+    state: present
+
+###### CREATE USER NLAPENKOV ######
+- name: Create new user "nlapenkov"
+  user:
+    name: nlapenkov
+    password: "{{ password_nlapenkov }}"
+    groups: admins
+    state: present
+    shell: /bin/bash
+    system: no
+    createhome: yes
+    home: /home/nlapenkov
+
+###### CREATE USER AKOLESNIK ######
+- name: Create new user "akolesnik"
+  user:
+    name: akolesnik
+    password: "{{ password_akolesnik }}"
+    groups: admins
+    state: present
+    shell: /bin/bash
+    system: no
+    createhome: yes
+    home: /home/akolesnik
+
+###### CREATE USER RFODERETS ######
+- name: Create new user "rfedorets"
+  user:
+    name: rfedorets
+    password: "{{ password_rfedorets }}"
+    groups: admins
+    state: present
+    shell: /bin/bash
+    system: no
+    createhome: yes
+    home: /home/rfedorets
+
+###### CREATE USER USER100 ######
+- name: Create new user "user100"
+  user:
+    name: user100
+    password: "{{ user100_password }}"
+    groups: admins
+    state: present
+    shell: /bin/bash
+    system: no
+    createhome: yes
+    home: /home/user100
+    
+###### ADD GROUP TO SUDO ######
+- name: Add group "admins" to SUDO
+  lineinfile:
+    dest: /etc/sudoers
+    line: '%admins ALL=(ALL:ALL) ALL'
+
+###### CONFIGURE POSTFIX ######
+- name: Relay postfix google
+  lineinfile: 
+    dest=/etc/postfix/main.cf
+    regexp='^relayhost ='
+    state=absent
+- name: add a multiline string to the file and delete the string from before
+  lineinfile: 
+    dest: /etc/postfix/main.cf
+    line: '{{ item }}'
+  with_items:
+    - 'virtual_alias_maps = hash:/etc/postfix/virtual'
+    - '# Relaying Postfix SMTP via GMAIL'
+    - 'smtp_sasl_auth_enable = yes'
+    - 'smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd'
+    - 'smtp_sasl_security_options = noanonymous'
+    - 'smtp_tls_CAfile = /etc/postfix/cacert.pem'
+    - 'smtp_use_tls = yes' 
+- name: Change relayhost 
+  lineinfile: 
+    dest: /etc/postfix/main.cf
+    insertbefore: '^smtp_sasl_auth_enable = yes'
+    line: 'relayhost = [smtp.gmail.com]:587'
+- name: Configure POSTFIX
+  template:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+  with_items:
+    - { src: 'sasl_passwd.j2', dest: '/etc/postfix/sasl_passwd' }
+    - { src: 'virtual', dest: '/etc/postfix/virtual' }
+    - { src: 'Thawte_Premium_Server_CA.pem', dest: '/etc/ssl/certs/Thawte_Premium_Server_CA.pem' }
+    - { src: 'Thawte_Premium_Server_CA.pem', dest: '/etc/postfix/cacert.pem' }
+  notify:
+    - service postfix restart
+- name: Set permission "/etc/postfix/sasl_passwd", "/etc/postfix/virtual"
+  file:
+    path: '{{ item }}'
+    mode: 0400
+  notify:
+    - service postfix restart
+  with_items:
+    - '/etc/postfix/sasl_passwd'
+    - '/etc/postfix/virtual'
+- name: Postmap "/etc/postfix/sasl_passwd", "/etc/postfix/virtual"
+  command: ' {{ item  }}'
+  with_items:
+    - 'postmap /etc/postfix/sasl_passwd'
+    - 'postmap /etc/postfix/virtual'
+- name: Send test  email
+  shell: 'echo "Hello World" | mail -s "Test Message" sup@ewolk.net'
+
+###### CONFIGURE IPTABLES ######
+- name: Configure IPTABLES rules
+  template:
+    src: iptables.j2
+    dest: /etc/network/if-pre-up.d/iptables
+- name: Set permissions 777 to IPTABLES script
+  file:
+    path: /etc/network/if-pre-up.d/iptables
+    mode: 0777
+
+###### ADD VMBR2 ######
+- name: Add vmbr2 network-interfaces
+  lineinfile:
+    dest: /etc/network/interfaces
+    line: '{{ item }}'
+  with_items:
+    - 'auto vmbr2'
+    - 'iface vmbr2 inet static'
+    - 'address  192.168.10.1'
+    - 'netmask  255.255.255.0'
+    - 'bridge_ports none'
+    - 'bridge_stp off'
+    - 'bridge_fd 0'
+
+###### CONFIGURE DHCPD ######
+- name: Copy files for dhcp-server
+  template:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+  notify:
+    - service isc-dhcp-server restart
+  with_items:
+    - { src: 'isc-dhcp-server', dest: '/etc/default/isc-dhcp-server' }
+    - { src: 'dhcpd.conf', dest: '/etc/dhcp/dhcpd.conf' }
+
+###### ADD SERVICES TO AUTORUN ######
+- name: Add services to autorun
+  service: name={{ item }} enabled=yes
+  with_items:
+    - apache2
+    - postfix
+    - isc-dhcp-server
+
+###### MANUAL SCRIPTS######
+- name: Copy "netest.sh", "delete_proxmox_empty_folders.sh"
+  template:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+  with_items:
+    - { src: 'netest.sh', dest: '/netest.sh' }
+    - { src: 'delete_proxmox_empty_folders.sh', dest: '/delete_proxmox_empty_folders.sh' }
+- name: Set permissions 777 to netest.sh delete_proxmox_empty_folders.sh
+  file:
+    path: '{{ item }}'
+    mode: 0777
+  with_items:
+    - '/netest.sh'
+    - '/delete_proxmox_empty_folders.sh'
+
+####### ADD CRON JOBS ######
+- name: Add netest.sh to CRONTAB
+  cron:
+    name: reboot nohup /netest.sh &
+    special_time: reboot
+    job: nohup /netest.sh &
+    state: present
+    user: root
+- name: Add delete_proxmox_empty_folders.sh to CRONTAB
+  cron:
+    name: Delete Proxmox empty folders
+    minute: "0"
+    hour: "1"
+    job: /delete_proxmox_empty_folders.sh
+    state: present
+    user: root
+
+###### REPLACE APACHE CONF ######
+- name: Replace /etc/apache2/apache2.conf
+  template:
+    src: apache2.conf
+    dest: /etc/apache2/apache2.conf
+  notify:
+    - service apache2 reload
+
+###### ADD ALL USERS FOR WEB ######
+- name: Copy ".htaccess", ".htpasswd" for web user100
+  template: 
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+  with_items:
+    - { src: '.htaccess', dest: '/var/www/html/.htaccess' }
+    - { src: '.htpasswd', dest: '/var/www/html/.htpasswd' }
+    - { src: 'user.cfg', dest: '/etc/pve/user.cfg' }
+- name: chmod 0644 ".htaccess", ".htpasswd"
+  file:
+    path: '{{ item }}'
+    mode: 0644
+  with_items:
+    - '/var/www/html/.htaccess'
+    - '/var/www/html/.htpasswd'
+
+###### COPY CERTS FROM SRV114.EWOLK.NET ######
+- name: PVE cert files
+  template:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+  with_items:
+    - { src: 'pve-root-ca.pem', dest: '/etc/pve/pve-root-ca.pem' }
+    - { src: 'pve-ssl.key', dest: '/etc/pve/nodes/{{ ns_node }}/pve-ssl.key' }
+    - { src: 'pve-ssl.pem', dest: '/etc/pve/nodes/{{ ns_node }}/pve-ssl.pem' }
+
+
+###### START SERVICES ######
+- name: Start services
+  service: name={{ item }} state=started
+  with_items:
+    - apache2
+    - postfix
+    - isc-dhcp-server

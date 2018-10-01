@@ -1,0 +1,8 @@
+- name: service postfix restart
+  service: name=postfix state=restarted
+
+- name: service isc-dhcp-server restart
+  service: name=isc-dhcp-server state=restarted
+
+- name : service apache2 reload
+  service: name=apache2 state=reloaded

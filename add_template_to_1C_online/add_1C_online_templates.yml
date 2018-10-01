@@ -1,0 +1,9 @@
+---
+- name: Copy template config files "LIGA", "1C-ONLINE"
+  
+  hosts: 1C_online
+  
+
+  roles:
+    - config_templates
+

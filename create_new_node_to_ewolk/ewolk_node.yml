@@ -1,0 +1,15 @@
+---
+- name: Add new node to EWOLK and configure NRPE
+  
+  hosts: ewolk
+  
+
+  vars_files:
+    - /etc/ansible/playbook/create_new_node_to_ewolk/roles/ewolk_node/vars/var.yml
+  
+
+  roles:
+    - ewolk_node
+    - /etc/ansible/playbook/install_nrpe_server/roles/nrpe_server
+    - /etc/ansible/playbook/add_template_to_ewolk_node/roles/config_templates
+

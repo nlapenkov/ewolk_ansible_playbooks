@@ -1,3 +1,4 @@
+###### INSTALL NEED SOFT ######
 - name: Install need soft
   apt: pkg={{ item }} state=latest
   with_items:
@@ -10,36 +11,36 @@
     - wget 
     - unzip 
     - libgd-dev
-
 - name: Install Sys::Statistics::Linux
   shell: /usr/bin/perl -MCPAN -e 'install Sys::Statistics::Linux'
 
-- name: Copy plugin check_linux_stats.pl
-  template: src=check_linux_stats.pl  dest=/usr/lib/nagios/plugins/check_linux_stats.pl
-  notify:
-
-- name: Set permission
-  file: 
-    path: /usr/lib/nagios/plugins/check_linux_stats.pl
-    mode: 0777
-
-- name: Copy plugin check_mem
-  template: src=check_mem  dest=/usr/lib/nagios/plugins/check_mem
-
-- name: Set permission
-  file:
-    path: /usr/lib/nagios/plugins/check_mem
-    mode: 0777
-
-- name: Copy config nrpe.cfg
-  template: src=nrpe.cfg  dest=/etc/nagios/nrpe.cfg
+###### COPY CONFIG FILES ######
+- name: Copy need files
+  template: 
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
   notify:
     - reload nagios-nrpe-server
+  with_items:
+    - { src: 'nrpe.cfg',  dest: '/etc/nagios/nrpe.cfg' }
+    - { src: 'check_linux_stats.pl', dest: '/usr/lib/nagios/plugins/check_linux_stats.pl' } 
+    - { src: 'check_mem',  dest: '/usr/lib/nagios/plugins/check_mem' }
 
+###### Set permission "check_linux_stats.pl", "check_mem" ######
+- name: Set permission 0777 "check_linux_stats.pl", "check_mem"
+  file:
+    path: '{{ item }}'
+    mode: 0777
+  with_items:
+    - '/usr/lib/nagios/plugins/check_linux_stats.pl'
+    - '/usr/lib/nagios/plugins/check_mem'
+
+###### START NRPE-SERVER ######
 - name: Starting nagios-nrpe-server
   service: name={{ item }} state=started
   with_items:
     - nagios-nrpe-server
 
+###### ADD TO AUTORUN SERVICES ######
 - name: Add to autorun nagios-nrpe-server
-  shell: systemctl enable nagios-nrpe-server
+  service: name=nagios-nrpe-server enabled=yes

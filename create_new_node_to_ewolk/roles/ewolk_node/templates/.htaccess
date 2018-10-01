@@ -1,0 +1,8 @@
+require valid-user
+Authname "Protected"
+Authtype Basic
+AuthUserFile "/var/www/html/.htpasswd"
+<Files /var/www/html/mas.csv>
+allow from all
+satisfy any
+</Files>

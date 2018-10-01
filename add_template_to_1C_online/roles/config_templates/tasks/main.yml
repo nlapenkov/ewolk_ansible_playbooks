@@ -1,0 +1,24 @@
+- name: mount NFS storage
+  template:
+    src: storage.cfg
+    dest: /etc/pve/storage.cfg
+
+###### COPY CONFIG OF TEMPLATE FILES ######
+- name: Create empty config of template files
+  shell: touch '{{ item }}' creates='{{ item }}'
+  with_items:
+    - '/etc/pve/qemu-server/{{ id_templates }}001.conf'
+    - '/etc/pve/qemu-server/{{ id_templates }}003.conf' 
+    - '/etc/pve/qemu-server/{{ id_templates }}019.conf' 
+    - '/etc/pve/qemu-server/{{ id_templates }}020.conf' 
+    - '/etc/pve/qemu-server/{{ id_templates }}021.conf'
+- name:  Copy config of template files
+  template:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+  with_items:
+    - { src: '108.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}001.conf' }
+    - { src: '11613.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}003.conf' }
+    - { src: '11654.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}019.conf' }
+    - { src: '11655.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}020.conf' }
+    - { src: '11657.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}021.conf' }

@@ -1,0 +1,176 @@
+#!/bin/bash
+
+echo 1 > /proc/sys/net/ipv4/ip_forward
+
+# Сбрасываем iptables
+/sbin/iptables -F
+/sbin/iptables -X
+/sbin/iptables -t nat -F
+/sbin/iptables -t nat -X
+/sbin/iptables -t mangle -F
+/sbin/iptables -t mangle -X
+
+# блокируем входящие
+/sbin/iptables -P INPUT DROP
+/sbin/iptables -P FORWARD ACCEPT
+/sbin/iptables -P OUTPUT ACCEPT
+
+#Разрешаем   а ик локал ной пе ли
+/sbin/iptables -A INPUT -i lo -j ACCEPT
+/sbin/iptables -A OUTPUT -o lo -j ACCEPT
+
+# аем необ одим е  аз е ени
+
+#Раз е аем по  овик дл  о п авки опове ений
+/sbin/iptables -A INPUT -s {{ ansible_default_ipv4.address }} -j ACCEPT
+/sbin/iptables -A INPUT -s debian.mirrors.ovh.net -j ACCEPT
+
+#Раз е аем до   п к  е ве   по SSH
+/sbin/iptables -A INPUT -i vmbr0 -p tcp --dport 22 -s 91.218.98.235 -j ACCEPT
+
+#PING from office
+/sbin/iptables -A INPUT -p icmp -s 91.218.98.235 -j ACCEPT
+
+#Proxmox веб ин е  ей
+/sbin/iptables -A INPUT -i vmbr0 -p tcp --dport 8006 -j ACCEPT
+
+#VNC
+/sbin/iptables -A INPUT -i vmbr0 -p tcp --dport 5900 -j ACCEPT
+
+#NFS    
+/sbin/iptables -A INPUT -s 51.68.154.110 -j ACCEPT
+/sbin/iptables -A OUTPUT -p tcp --dport 2049 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+/sbin/iptables -A INPUT -p tcp --sport 2049 -m state --state ESTABLISHED -j ACCEPT
+/sbin/iptables -A OUTPUT -p udp --dport 2049 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+/sbin/iptables -A INPUT -p udp --sport 2049 -m state --state ESTABLISHED -j ACCEPT
+#Раз е аем  DNS
+
+# DNS1
+/sbin/iptables -A INPUT -s 213.186.33.99 -j ACCEPT
+
+# DNS2
+#/sbin/iptables -A INPUT -s 213.133.100.100 -j ACCEPT
+
+# DNS3
+#/sbin/iptables -A INPUT -s 213.133.98.98 -j ACCEPT
+/sbin/iptables -t nat -A POSTROUTING -s 192.168.10.0/24 -o vmbr0 -j MASQUERADE
+
+#vRAC
+/sbin/iptables -A INPUT -i eno2 -j ACCEPT
+
+#RDP
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2210 -j DNAT --to-destination 192.168.10.10:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2211 -j DNAT --to-destination 192.168.10.11:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2212 -j DNAT --to-destination 192.168.10.12:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2213 -j DNAT --to-destination 192.168.10.13:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2214 -j DNAT --to-destination 192.168.10.14:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2215 -j DNAT --to-destination 192.168.10.15:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2216 -j DNAT --to-destination 192.168.10.16:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2217 -j DNAT --to-destination 192.168.10.17:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2218 -j DNAT --to-destination 192.168.10.18:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2219 -j DNAT --to-destination 192.168.10.19:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2220 -j DNAT --to-destination 192.168.10.20:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2221 -j DNAT --to-destination 192.168.10.21:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2222 -j DNAT --to-destination 192.168.10.22:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2223 -j DNAT --to-destination 192.168.10.23:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2224 -j DNAT --to-destination 192.168.10.24:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2225 -j DNAT --to-destination 192.168.10.25:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2226 -j DNAT --to-destination 192.168.10.26:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2227 -j DNAT --to-destination 192.168.10.27:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2228 -j DNAT --to-destination 192.168.10.28:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2229 -j DNAT --to-destination 192.168.10.29:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2230 -j DNAT --to-destination 192.168.10.30:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2231 -j DNAT --to-destination 192.168.10.31:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2232 -j DNAT --to-destination 192.168.10.32:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2233 -j DNAT --to-destination 192.168.10.33:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2234 -j DNAT --to-destination 192.168.10.34:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2235 -j DNAT --to-destination 192.168.10.35:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2236 -j DNAT --to-destination 192.168.10.36:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2237 -j DNAT --to-destination 192.168.10.37:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2238 -j DNAT --to-destination 192.168.10.38:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2239 -j DNAT --to-destination 192.168.10.39:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2240 -j DNAT --to-destination 192.168.10.40:3389
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 2241 -j DNAT --to-destination 192.168.10.41:3389
+
+#SSH
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3210 -j DNAT --to-destination 192.168.10.10:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3211 -j DNAT --to-destination 192.168.10.11:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3212 -j DNAT --to-destination 192.168.10.12:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3213 -j DNAT --to-destination 192.168.10.13:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3214 -j DNAT --to-destination 192.168.10.14:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3215 -j DNAT --to-destination 192.168.10.15:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3216 -j DNAT --to-destination 192.168.10.16:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3217 -j DNAT --to-destination 192.168.10.17:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3218 -j DNAT --to-destination 192.168.10.18:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3219 -j DNAT --to-destination 192.168.10.19:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3220 -j DNAT --to-destination 192.168.10.20:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3221 -j DNAT --to-destination 192.168.10.21:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3222 -j DNAT --to-destination 192.168.10.22:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3223 -j DNAT --to-destination 192.168.10.23:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3224 -j DNAT --to-destination 192.168.10.24:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3225 -j DNAT --to-destination 192.168.10.25:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3226 -j DNAT --to-destination 192.168.10.26:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3227 -j DNAT --to-destination 192.168.10.27:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3228 -j DNAT --to-destination 192.168.10.28:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3229 -j DNAT --to-destination 192.168.10.29:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3230 -j DNAT --to-destination 192.168.10.30:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3231 -j DNAT --to-destination 192.168.10.31:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3232 -j DNAT --to-destination 192.168.10.32:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3233 -j DNAT --to-destination 192.168.10.33:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3234 -j DNAT --to-destination 192.168.10.34:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3235 -j DNAT --to-destination 192.168.10.35:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3236 -j DNAT --to-destination 192.168.10.36:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3237 -j DNAT --to-destination 192.168.10.37:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3238 -j DNAT --to-destination 192.168.10.38:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3239 -j DNAT --to-destination 192.168.10.39:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3240 -j DNAT --to-destination 192.168.10.40:22
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 3241 -j DNAT --to-destination 192.168.10.41:22
+
+#WEB
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4210 -j DNAT --to-destination 192.168.10.10:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4211 -j DNAT --to-destination 192.168.10.11:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4212 -j DNAT --to-destination 192.168.10.12:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4213 -j DNAT --to-destination 192.168.10.13:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4214 -j DNAT --to-destination 192.168.10.14:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4215 -j DNAT --to-destination 192.168.10.15:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4216 -j DNAT --to-destination 192.168.10.16:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4217 -j DNAT --to-destination 192.168.10.17:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4218 -j DNAT --to-destination 192.168.10.18:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4219 -j DNAT --to-destination 192.168.10.19:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4220 -j DNAT --to-destination 192.168.10.20:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4221 -j DNAT --to-destination 192.168.10.21:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4222 -j DNAT --to-destination 192.168.10.22:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4223 -j DNAT --to-destination 192.168.10.23:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4224 -j DNAT --to-destination 192.168.10.24:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4225 -j DNAT --to-destination 192.168.10.25:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4226 -j DNAT --to-destination 192.168.10.26:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4227 -j DNAT --to-destination 192.168.10.27:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4228 -j DNAT --to-destination 192.168.10.28:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4229 -j DNAT --to-destination 192.168.10.29:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4230 -j DNAT --to-destination 192.168.10.30:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4231 -j DNAT --to-destination 192.168.10.31:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4232 -j DNAT --to-destination 192.168.10.32:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4233 -j DNAT --to-destination 192.168.10.33:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4234 -j DNAT --to-destination 192.168.10.34:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4235 -j DNAT --to-destination 192.168.10.35:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4236 -j DNAT --to-destination 192.168.10.36:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4237 -j DNAT --to-destination 192.168.10.37:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4238 -j DNAT --to-destination 192.168.10.38:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4239 -j DNAT --to-destination 192.168.10.39:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4240 -j DNAT --to-destination 192.168.10.40:80
+/sbin/iptables -t nat -A PREROUTING -p tcp -d {{ ansible_default_ipv4.address }} --dport 4241 -j DNAT --to-destination 192.168.10.41:80
+
+#бан упоротого китайца
+#/sbin/iptables -I INPUT -s 51.255.175.229 -j DROP
+#/sbin/iptables -I INPUT -s 14.37.38.213 -j DROP
+#/sbin/iptables -I INPUT -s 85.159.237.69 -j DROP
+#/sbin/iptables -I INPUT -s 62.210.205.103 -j DROP
+#/sbin/iptables -I INPUT -s 182.100.67.52 -j DROP
+
+#iptables -t nat -A POSTROUTING -s 192.168.10.0/24 -j SNAT --to-source {{ ansible_default_ipv4.address }}
+#iptables -t nat -A POSTROUTING -s 192.168.10.0/24 -j SNAT --to-source {{ ansible_default_ipv4.address }}
+#iptables -A FORWARD -s 192.168.10.0/24 -j ACCEPT
+#iptables -A FORWARD -d 192.168.10.0/24 -j ACCEPT
+/sbin/iptables -A INPUT -i vmbr0 -p tcp --dport 5666 -j ACCEPT
+/sbin/iptables -A INPUT -p icmp -s 54.38.192.56 -j ACCEPT
+/sbin/iptables -A INPUT -i vmbr0 -p tcp --dport 22 -s 54.38.192.56 -j ACCEPT

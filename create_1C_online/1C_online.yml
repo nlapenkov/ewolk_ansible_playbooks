@@ -1,0 +1,15 @@
+---
+- name: Create new node to 1C_online and configure NRPE
+  
+  hosts: 1C_online
+  
+
+  vars_files:
+    -  /etc/ansible/playbook/create_1C_online/roles/1C_online/vars/var.yml
+  
+
+  roles:
+    - 1C_online
+    - /etc/ansible/playbook/install_nrpe_server/roles/nrpe_server
+    - /etc/ansible/playbook/add_template_to_1C_online/roles/config_templates
+

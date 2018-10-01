@@ -1,0 +1,51 @@
+###### COPY CONFIG OF TEMPLATE FILES ######
+- name: Create empty config of template files
+  shell: touch '{{ item }}' creates='{{ item }}'
+  with_items:
+    - '/etc/pve/qemu-server/{{ id_templates }}001.conf'
+    - '/etc/pve/qemu-server/{{ id_templates }}002.conf'
+    - '/etc/pve/qemu-server/{{ id_templates }}003.conf' 
+    - '/etc/pve/qemu-server/{{ id_templates }}004.conf' 
+    - '/etc/pve/qemu-server/{{ id_templates }}005.conf'
+    - '/etc/pve/qemu-server/{{ id_templates }}006.conf'
+    - '/etc/pve/qemu-server/{{ id_templates }}007.conf' 
+    - '/etc/pve/qemu-server/{{ id_templates }}008.conf' 
+    - '/etc/pve/qemu-server/{{ id_templates }}009.conf' 
+    - '/etc/pve/qemu-server/{{ id_templates }}010.conf' 
+    - '/etc/pve/qemu-server/{{ id_templates }}011.conf' 
+    - '/etc/pve/qemu-server/{{ id_templates }}012.conf' 
+    - '/etc/pve/qemu-server/{{ id_templates }}013.conf' 
+    - '/etc/pve/qemu-server/{{ id_templates }}014.conf' 
+    - '/etc/pve/qemu-server/{{ id_templates }}015.conf' 
+    - '/etc/pve/qemu-server/{{ id_templates }}016.conf' 
+    - '/etc/pve/qemu-server/{{ id_templates }}017.conf' 
+    - '/etc/pve/qemu-server/{{ id_templates }}018.conf' 
+    - '/etc/pve/qemu-server/{{ id_templates }}019.conf' 
+    - '/etc/pve/qemu-server/{{ id_templates }}020.conf' 
+    - '/etc/pve/qemu-server/{{ id_templates }}021.conf'
+- name:  Copy config of template files
+  template:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+  with_items:
+    - { src: '108.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}001.conf' }
+    - { src: '11611.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}002.conf' }
+    - { src: '11613.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}003.conf' }
+    - { src: '11614.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}004.conf' }
+    - { src: '11615.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}005.conf' }
+    - { src: '11616.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}006.conf' }
+    - { src: '11619.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}007.conf' }
+    - { src: '11623.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}008.conf' }
+    - { src: '11624.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}009.conf' }
+    - { src: '11625.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}010.conf' }
+    - { src: '11628.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}011.conf' }
+    - { src: '11631.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}012.conf' }
+    - { src: '11642.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}013.conf' }
+    - { src: '11643.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}014.conf' }
+    - { src: '11645.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}015.conf' }
+    - { src: '11646.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}016.conf' }
+    - { src: '11647.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}017.conf' }
+    - { src: '11652.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}018.conf' }
+    - { src: '11654.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}019.conf' }
+    - { src: '11655.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}020.conf' }
+    - { src: '11657.conf', dest: '/etc/pve/qemu-server/{{ id_templates }}021.conf' }
